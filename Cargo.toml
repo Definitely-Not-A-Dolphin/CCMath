@@ -1,5 +1,6 @@
 [package]
 name = "cc"
+description = "A simple library for doing math with complex numbers :D"
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
