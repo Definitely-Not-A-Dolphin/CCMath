@@ -4,7 +4,7 @@ use std::f64;
 use super::*;
 
 #[test]
-fn complex_unary_operators() {
+fn unary_operators() {
     let z1 = Complex::new(3f64, 4f64);
     let z2 = Complex::new(5.2, -0.9);
 
@@ -55,7 +55,7 @@ fn complex_unary_operators() {
 }
 
 #[test]
-fn simple_binary_operators() {
+fn binary_operators() {
     let z1 = Complex::new(3f32, 4f32);
     let z2 = Complex::new(-2.5, 6.23);
 
@@ -79,10 +79,7 @@ fn simple_binary_operators() {
 
     // dividing
     assert_eq!(z1 / -0.5, Complex::new(-6f32, -8f32));
-    assert_eq!(
-        1.8 / z2,
-        Complex::new(-0.099860415, -0.24885215)
-    );
+    assert_eq!(1.8 / z2, Complex::new(-0.099860415, -0.24885215));
     assert_eq!(
         z1 / z2,
         Complex::new(
@@ -90,34 +87,36 @@ fn simple_binary_operators() {
             z1.real * z2.inv().imag + z1.imag * z2.inv().real
         )
     );
-}
 
-#[test]
-fn complex_binary_operators() {
-    let z1 = Complex::new(3f64, 4f64);
-    let z2 = Complex::new(5.2, -0.9);
+    let z3 = Complex::new(3f64, 4f64);
+    let z4 = Complex::new(5.2, -0.9);
 
     // powi
-    assert_eq!(z1.powi(6), Complex::new(11753f64, -10296f64));
+    assert_eq!(z3.powi(6), Complex::new(11753f64, -10296f64));
     assert_eq!(
-        z2.powi(-2),
+        z4.powi(-2),
         Complex::new(0.03381799780176568, 0.012067726245692974)
     );
 
     // powf
-    assert_eq!(z1.powf(3f64), Complex::new(-117f64, 43.99999999999998));
+    assert_eq!(z3.powf(3f64), Complex::new(-117f64, 43.99999999999998));
     assert_eq!(
-        z2.powf(-2.5),
+        z4.powf(-2.5),
         Complex::new(0.014217542838549325, 0.00649377309897787)
     );
 
     // powc
     assert_eq!(
-        z1.powc(z2),
+        z3.powc(z4),
         Complex::new(-9667.467998399987, -2282.430226186542)
     );
     assert_eq!(
-        z2.powc(z1),
+        z4.powc(z3),
         Complex::new(288.7067987011787, -41.7623644411436)
     );
+}
+
+#[test]
+fn complex_trig() {
+    // Still have to do this
 }

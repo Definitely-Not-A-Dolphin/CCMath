@@ -6,6 +6,6 @@ Complex number library for a hobby project. Wasn't speficially made for others t
 
 - Implement exponentiation by squaring
 - Inverse triginometric functions
-- Hyperbolic triginometric functions
+- ~~Hyperbolic triginometric functions~~
 - Inverse hyperbolic triginometric functions
-- Put all operator overloading in a seperate file
+- ~~Put all operator overloading in a seperate file~~

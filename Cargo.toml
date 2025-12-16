@@ -7,6 +7,7 @@ license = "MIT"
 keywords = ["mathematics", "complex"]
 repository = "https://github.com/Definitely-Not-A-Dolphin/CCMath"
 readme = "README.md"
+authors = ["Derek Verduijn"]
 
 [dependencies]
 num-traits = "0.2.19"
