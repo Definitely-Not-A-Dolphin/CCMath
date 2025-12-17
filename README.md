@@ -4,4 +4,4 @@ Complex number library for a hobby project. Wasn't speficially made for others t
 
 # To Do list
 
-- Implement exponentiation by squaring
+Nothing currently!

@@ -44,7 +44,7 @@ impl<T: Float> Complex<T> {
 
     // Returns two i
     fn two_i() -> Self {
-        Self::new(T::zero(), T::two())
+        Self::i() * T::two()
     }
 
     /// Returns the real part of this [`Complex`].
@@ -84,8 +84,8 @@ impl<T: Float> Complex<T> {
     /// Returns the square root of this [`Complex`].
     pub fn sqrt(self) -> Self {
         Self::new(
-            ((self.real + self.abs()) / T::two()).sqrt(),
-            self.imag.signum() * ((-self.real + self.abs()) / T::two()).sqrt(),
+            T::sqrt((self.real + self.abs()) / T::two()),
+            self.imag.signum() * T::sqrt((-self.real + self.abs()) / T::two()),
         )
     }
 
@@ -94,18 +94,20 @@ impl<T: Float> Complex<T> {
         Self::conj(self) / Self::square_abs(self)
     }
 
-    /// Returns this [`Complex`] raised to a power using repeated multiplication.
+    /// Returns this [`Complex`] raised to a power using exponentiation by squaring.
     pub fn powi(self, exponent: i64) -> Self {
         match exponent {
             0 => Self::new(T::one(), T::zero()),
             1 => self,
             -1 => self.inv(),
             _ => {
-                let mut result = self;
-                for _ in 2..=exponent.abs() {
-                    result *= self;
+                if exponent < 0 {
+                    Self::powi(self, -exponent).inv()
+                } else if exponent.rem_euclid(2) == 0 {
+                    Self::powi(self * self, exponent / 2)
+                } else {
+                    self * Self::powi(self * self, (exponent - 1) / 2)
                 }
-                if exponent < 0 { result.inv() } else { result }
             }
         }
     }
@@ -158,7 +160,7 @@ impl<T: Float> Complex<T> {
 }
 
 // Trig
-impl<T: Float + Debug> Complex<T> {
+impl<T: Float> Complex<T> {
     /// Returns the sine of this [`Complex`].
     pub fn sin(self) -> Self {
         Self::new(
@@ -302,9 +304,6 @@ impl<T: Float + Debug> Complex<T> {
 // Implements display
 impl<T: Float + Display> fmt::Display for Complex<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // The `f` value implements the `Write` trait, which is what the
-        // write! macro is expecting. Note that this formatting ignores the
-        // various flags provided to format strings.
         if self.imag >= T::zero() {
             write!(f, "{} + {}i", self.real, self.imag)
         } else {
