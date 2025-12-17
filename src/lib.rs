@@ -158,7 +158,7 @@ impl<T: Float> Complex<T> {
 }
 
 // Trig
-impl<T: Float> Complex<T> {
+impl<T: Float + Debug> Complex<T> {
     /// Returns the sine of this [`Complex`].
     pub fn sin(self) -> Self {
         Self::new(
@@ -204,7 +204,7 @@ impl<T: Float> Complex<T> {
 
     /// Returns the arccosine of this [`Complex`].
     pub fn arccos(self) -> Self {
-        -Self::i() * Self::ln(Self::sqrt(self.powi(2) - T::one()) + self)
+        Self::i() * Self::ln(Self::sqrt(-self.powi(2) + T::one()) / Self::i() + self)
     }
 
     /// Returns the arctangent of this [`Complex`].
