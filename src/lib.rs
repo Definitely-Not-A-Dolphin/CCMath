@@ -35,31 +35,84 @@ impl<T: Float> Complex<T> {
     }
 
     /// Returns the real part of this [`Complex`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ccmath::Complex;
+    ///
+    /// let z = Complex::new(-1.4, 21.6);
+    /// assert_eq!(z.real(), -1.4);
+    /// ```
     pub fn real(self) -> T {
         self.real
     }
 
     /// Returns the imaginary part of this [`Complex`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ccmath::Complex;
+    ///
+    /// let z = Complex::new(-1.4, 21.6);
+    /// assert_eq!(z.real(), -1.4);
+    /// ```
     pub fn imag(self) -> T {
         self.imag
     }
 
     /// Returns the conjugate of this [`Complex`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ccmath::Complex;
+    ///
+    /// let z = Complex::new(4.0, 5.0);
+    /// let z_conjugate = z.conj();
+    ///
+    /// assert_eq!(z_conjugate, Complex::new(4.0, -5.0));
+    /// ```
     pub fn conj(self) -> Self {
         Self::new(self.real, -self.imag)
     }
 
     /// Returns the square of the absolute value of this [`Complex`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ccmath::Complex;
+    ///
+    /// let z1 = Complex::new(3.0, 4.0);
+    /// let z2 = Complex::new(4.2, 2.1);
+    ///
+    /// assert_eq!(Complex::square_abs(z1), 25.0);
+    /// assert_eq!(Complex::square_abs(z2), 22.05);
+    /// ```
     pub fn square_abs(self) -> T {
         self.real.powi(2) + self.imag.powi(2)
     }
 
     /// Returns the absolute value of this [`Complex`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ccmath::Complex;
+    ///
+    /// let z1 = Complex::new(3.0, 4.0);
+    /// let z2 = Complex::new(4.2, 2.1);
+    ///
+    /// assert_eq!(Complex::abs(z1), 5.0);
+    /// assert_eq!(Complex::abs(z2), f32::sqrt(22.05));
+    /// ```
     pub fn abs(self) -> T {
         T::sqrt(Self::square_abs(self))
     }
 
-    /// Returns the arg on the interval (-PI, PI] of this [`Complex`].
+    /// Returns the argument on the interval (-PI, PI] of this [`Complex`].
     pub fn arg(self) -> T {
         if Self::abs(self) == T::zero() {
             T::zero()
