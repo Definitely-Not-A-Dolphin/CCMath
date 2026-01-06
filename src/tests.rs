@@ -278,3 +278,10 @@ fn complex_inverse_hyperbolic_trig() {
         Complex::new(0.12124561370968728, -0.15950663187736328)
     );
 }
+
+#[test]
+fn ttttttttttt() {
+    let z1 = ComplexPolar::new(0f64, 0f64);
+
+    dbg!(z1);
+}

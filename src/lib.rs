@@ -1,6 +1,6 @@
 /// CCMath: a crate for doing math with complex numbers
 use num_traits::Float;
-use std::fmt::{Debug, Display, Formatter, Result};
+use std::fmt::{Display, Formatter, Result};
 
 /// Struct representing a complex number
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -14,13 +14,24 @@ pub type CC<T> = Complex<T>;
 // Personal tip: use this alias when code is getting a little hard to read, it cleans things up!
 
 trait Numbers: Float {
-    fn two() -> Self;
+    fn num(n: u32) -> Self;
+    fn pi() -> Self;
 }
 
 impl<T: Float> Numbers for T {
-    /// Returns the number two
-    fn two() -> T {
-        T::one() + T::one()
+    /// Returns any whole positive number as T
+    fn num(n: u32) -> T {
+        (0..n).fold(T::zero(), |sum, _| sum + T::one())
+    }
+    fn pi() -> T {
+        [
+            1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3, 2, 3, 8, 4, 6, 2, 6, 4, 3,
+        ]
+        .iter()
+        .enumerate()
+        .fold(T::num(3), |pi, (k, item)| {
+            pi + T::num(*item) / T::num(10).powi(k as i32 + 1)
+        })
     }
 }
 
@@ -130,8 +141,8 @@ impl<T: Float> Complex<T> {
     /// Returns the square root of this [`Complex`].
     pub fn sqrt(self) -> Self {
         Self::new(
-            T::sqrt((self.real + Self::abs(self)) / T::two()),
-            self.imag.signum() * T::sqrt((-self.real + Self::abs(self)) / T::two()),
+            T::sqrt((self.real + Self::abs(self)) / T::num(2)),
+            self.imag.signum() * T::sqrt((-self.real + Self::abs(self)) / T::num(2)),
         )
     }
 
@@ -181,7 +192,7 @@ impl<T: Float> Complex<T> {
 
     /// Returns the natural logarithm of the absolute value of this [`Complex`].
     pub fn ln_abs(self) -> T {
-        T::ln(Self::square_abs(self)) / T::two()
+        T::ln(Self::square_abs(self)) / T::num(2)
     }
 
     /// Returns the natural logarithm of this [`Complex`].
@@ -191,8 +202,7 @@ impl<T: Float> Complex<T> {
 
     /// Returns the logarithm base 10 of this [`Complex`].
     pub fn log(self) -> Self {
-        Self::ln(self) / T::ln(T::two() * (T::two() * T::two() + T::one()))
-        //                     This is equal to 10
+        Self::ln(self) / T::ln(T::num(10))
     }
 
     /// Returns the logarithm base n of this [`Complex`].
@@ -323,7 +333,7 @@ impl<T: Float> Complex<T> {
 
     /// Returns the hyperbolic arctangent of this [`Complex`].
     pub fn arctanh(self) -> Self {
-        Self::ln((self + T::one()) / (-self + T::one())) * T::powi(T::two(), -1)
+        Self::ln((self + T::one()) / (-self + T::one())) / T::num(2)
     }
 
     /// Returns the hyperbolic arccotangent of this [`Complex`].
@@ -363,13 +373,22 @@ pub struct ComplexPolar<T: Float> {
 impl<T: Float> ComplexPolar<T> {
     /// Creates a new [`ComplexPolar`].
     pub fn new(radius: T, angle: T) -> Self {
-        Self { radius, angle }
+        Self {
+            radius: radius.abs(),
+            angle: (angle
+                + if radius < T::zero() {
+                    T::pi()
+                } else {
+                    T::zero()
+                })
+                % (T::num(2) * T::pi()),
+        }
     }
 
-    ///// Returns the imaginary number i
-    // pub fn i() -> Self {
-    //   Self::new(T::one(), T::PI())
-    // }
+    /// Returns the imaginary number i
+    pub fn i() -> Self {
+        Self::new(T::one(), T::pi())
+    }
 
     /// Returns the absolute value of this [`ComplexPolar`].
     ///
@@ -377,9 +396,10 @@ impl<T: Float> ComplexPolar<T> {
     ///
     /// ```
     /// use ccmath::ComplexPolar;
+    /// use std::f32;
     ///
-    /// let z1 = ComplexPolar::new(4.0, f32::PI);
-    /// let z2 = ComplexPolar::new(5.0, f32::PI / 2.0);
+    /// let z1 = ComplexPolar::new(4.0, f32::consts::PI);
+    /// let z2 = ComplexPolar::new(5.0, f32::consts::PI / 2.0);
     ///
     /// assert_eq!(ComplexPolar::abs(z1), 4.0);
     /// assert_eq!(ComplexPolar::abs(z2), 5.0);
@@ -400,7 +420,7 @@ impl<T: Float> ComplexPolar<T> {
 
     /// Returns the square root of this [`ComplexPolar`].
     pub fn sqrt(self) -> Self {
-        Self::new(T::sqrt(self.radius), self.angle / T::two())
+        Self::new(T::sqrt(self.radius), self.angle / T::num(2))
     }
 
     /// Returns the multiplicative inverse of this [`ComplexPolar`].
