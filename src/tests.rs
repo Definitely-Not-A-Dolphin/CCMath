@@ -22,8 +22,8 @@ fn unary_operators() {
     assert_eq!(z2.square_abs(), 27.85);
 
     // arg
-    assert_eq!(z1.arg(), 0.9272952180016123);
-    assert_eq!(z2.arg(), -0.1713791263895069);
+    assert_eq!(z1.arg(), 0.9272952180016122);
+    assert_eq!(z2.arg(), -0.17137912638950764);
 
     // inv
     assert_eq!(z1.inv(), Complex::new(0.12, -0.16));
@@ -98,10 +98,10 @@ fn binary_operators() {
     );
 
     // powf
-    assert_eq!(z3.powf(3f64), Complex::new(-117f64, 43.99999999999998));
+    assert_eq!(z3.powf(3f64), Complex::new(-117f64, 44.000000000000036));
     assert_eq!(
         z4.powf(-2.5),
-        Complex::new(0.014217542838549325, 0.00649377309897787)
+        Complex::new(0.014217542838549313, 0.006493773098977897)
     );
 
     // powc
@@ -111,7 +111,7 @@ fn binary_operators() {
     );
     assert_eq!(
         z4.powc(z3),
-        Complex::new(288.7067987011787, -41.7623644411436)
+        Complex::new(288.7067987011794, -41.762364441144356)
     );
 }
 
@@ -163,7 +163,7 @@ fn complex_inverse_trig() {
     // arcsin
     assert_eq!(
         Complex::arcsin(z1),
-        Complex::new(0.6339838656391737, 2.305509031243471)
+        Complex::new(0.6339838656391736, 2.305509031243471)
     );
 
     // arccos
@@ -181,7 +181,7 @@ fn complex_inverse_trig() {
     // arccot
     assert_eq!(
         Complex::arccot(z1),
-        Complex::new(0.12248933156343111, -0.1589971916799991)
+        Complex::new(0.1224893315634308, -0.1589971916799991)
     );
 
     // arcsec
@@ -193,7 +193,7 @@ fn complex_inverse_trig() {
     // arccsc
     assert_eq!(
         Complex::arccsc(z1),
-        Complex::new(0.11875073130740989, -0.1604455337745046)
+        Complex::new(0.11875073130740998, -0.1604455337745046)
     );
 }
 
@@ -245,13 +245,13 @@ fn complex_inverse_hyperbolic_trig() {
     // arcsinh
     assert_eq!(
         Complex::arcsinh(z1),
-        Complex::new(2.2999140408792695, 0.9176168533514786)
+        Complex::new(2.2999140408792695, 0.9176168533514787)
     );
 
     // arccosh
     assert_eq!(
         Complex::arccosh(z1),
-        Complex::new(2.305509031243477, 0.9368124611557199)
+        Complex::new(2.305509031243477, 0.93681246115572)
     );
 
     // arctanh
@@ -263,7 +263,7 @@ fn complex_inverse_hyperbolic_trig() {
     // arccoth
     assert_eq!(
         Complex::arccoth(z1),
-        Complex::new(0.11750090731143398, -0.16087527719832115)
+        Complex::new(0.11750090731143398, -0.1608752771983211)
     );
 
     // arcsech
@@ -275,13 +275,6 @@ fn complex_inverse_hyperbolic_trig() {
     // arccsch
     assert_eq!(
         Complex::arccsch(z1),
-        Complex::new(0.12124561370968728, -0.15950663187736328)
+        Complex::new(0.12124561370968728, -0.15950663187736336)
     );
-}
-
-#[test]
-fn ttttttttttt() {
-    let z1 = ComplexPolar::new(0f64, 0f64);
-
-    dbg!(z1);
 }

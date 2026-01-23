@@ -13,14 +13,14 @@ pub struct Complex<T: Float> {
 pub type CC<T> = Complex<T>;
 // Personal tip: use this alias when code is getting a little hard to read, it cleans things up!
 
-trait Numbers: Float {
+trait Utils: Float {
     fn num(n: u32) -> Self;
     fn pi() -> Self;
     fn powc(self, exponent: Complex<Self>) -> Complex<Self>;
     fn powcp(self, exponent: ComplexPolar<Self>) -> ComplexPolar<Self>;
 }
 
-impl<T: Float> Numbers for T {
+impl<T: Float> Utils for T {
     /// Returns any whole positive number as T
     fn num(n: u32) -> T {
         (0..n).fold(T::zero(), |sum, _| sum + T::one())
@@ -136,11 +136,7 @@ impl<T: Float> Complex<T> {
 
     /// Returns the argument on the interval (-PI, PI] of this [`Complex`].
     pub fn arg(self) -> T {
-        if Self::abs(self) == T::zero() {
-            T::zero()
-        } else {
-            self.imag.signum() * T::acos(self.real / Self::abs(self))
-        }
+        T::atan2(self.imag, self.real)
     }
 
     /// Returns this [`Complex`] in polar form as a [`ComplexPolar`]
@@ -513,7 +509,6 @@ impl<T: Float> ComplexPolar<T> {
 }
 
 mod overloading;
-mod polaroverloading;
 
 #[cfg(test)]
 mod tests;

@@ -1,5 +1,5 @@
-use crate::Complex;
-use num_traits::{self, Float};
+use crate::{Complex, ComplexPolar};
+use num_traits::Float;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 // Addition
@@ -17,24 +17,6 @@ impl<T: Float> Add<T> for Complex<T> {
 impl<T: Float> AddAssign<T> for Complex<T> {
     fn add_assign(&mut self, rhs: T) {
         *self = *self + rhs;
-    }
-}
-
-/// f32 + Complex<f32>
-impl Add<Complex<f32>> for f32 {
-    type Output = Complex<f32>;
-
-    fn add(self, rhs: Complex<f32>) -> Complex<f32> {
-        Complex::new(self + rhs.real, rhs.imag)
-    }
-}
-
-/// f64 + Complex<f64>
-impl Add<Complex<f64>> for f64 {
-    type Output = Complex<f64>;
-
-    fn add(self, rhs: Complex<f64>) -> Complex<f64> {
-        Complex::new(self + rhs.real, rhs.imag)
     }
 }
 
@@ -72,24 +54,6 @@ impl<T: Float> SubAssign<T> for Complex<T> {
     }
 }
 
-/// f32 - Complex<f32>
-impl Sub<Complex<f32>> for f32 {
-    type Output = Complex<f32>;
-
-    fn sub(self, rhs: Complex<f32>) -> Complex<f32> {
-        Complex::new(self - rhs.real, -rhs.imag)
-    }
-}
-
-/// f64 - Complex<f64>
-impl Sub<Complex<f64>> for f64 {
-    type Output = Complex<f64>;
-
-    fn sub(self, rhs: Complex<f64>) -> Complex<f64> {
-        Complex::new(self - rhs.real, -rhs.imag)
-    }
-}
-
 /// Complex<T> - Complex<T>
 impl<T: Float> Sub<Complex<T>> for Complex<T> {
     type Output = Complex<T>;
@@ -117,6 +81,15 @@ impl<T: Float> Neg for Complex<T> {
     }
 }
 
+/// -ComplexPolar<T>
+impl<T: Float> Neg for ComplexPolar<T> {
+    type Output = ComplexPolar<T>;
+
+    fn neg(self) -> ComplexPolar<T> {
+        ComplexPolar::new(-self.radius, self.angle)
+    }
+}
+
 // Multiplication
 
 /// Complex<T> * T
@@ -132,24 +105,6 @@ impl<T: Float> Mul<T> for Complex<T> {
 impl<T: Float> MulAssign<T> for Complex<T> {
     fn mul_assign(&mut self, rhs: T) {
         *self = *self * rhs;
-    }
-}
-
-/// f32 * Complex<f32>
-impl Mul<Complex<f32>> for f32 {
-    type Output = Complex<f32>;
-
-    fn mul(self, rhs: Complex<f32>) -> Complex<f32> {
-        Complex::new(rhs.real * self, rhs.imag * self)
-    }
-}
-
-/// f64 * Complex<f64>
-impl Mul<Complex<f64>> for f64 {
-    type Output = Complex<f64>;
-
-    fn mul(self, rhs: Complex<f64>) -> Complex<f64> {
-        Complex::new(rhs.real * self, rhs.imag * self)
     }
 }
 
@@ -172,6 +127,38 @@ impl<T: Float> MulAssign<Complex<T>> for Complex<T> {
     }
 }
 
+/// ComplexPolar<T> * T
+impl<T: Float> Mul<T> for ComplexPolar<T> {
+    type Output = ComplexPolar<T>;
+
+    fn mul(self, rhs: T) -> ComplexPolar<T> {
+        ComplexPolar::new(self.radius * rhs, self.angle)
+    }
+}
+
+/// ComplexPolar<T> *= T
+impl<T: Float> MulAssign<T> for ComplexPolar<T> {
+    fn mul_assign(&mut self, rhs: T) {
+        *self = *self * rhs;
+    }
+}
+
+/// ComplexPolar<T> * ComplexPolar<T>
+impl<T: Float> Mul<ComplexPolar<T>> for ComplexPolar<T> {
+    type Output = ComplexPolar<T>;
+
+    fn mul(self, rhs: ComplexPolar<T>) -> ComplexPolar<T> {
+        ComplexPolar::new(self.radius * rhs.radius, self.angle + rhs.angle)
+    }
+}
+
+/// ComplexPolar<T> *= ComplexPolar<T>
+impl<T: Float> MulAssign<ComplexPolar<T>> for ComplexPolar<T> {
+    fn mul_assign(&mut self, rhs: ComplexPolar<T>) {
+        *self = *self * rhs
+    }
+}
+
 // Division
 
 /// Complex<T> / T
@@ -187,24 +174,6 @@ impl<T: Float> Div<T> for Complex<T> {
 impl<T: Float> DivAssign<T> for Complex<T> {
     fn div_assign(&mut self, rhs: T) {
         *self = *self / rhs;
-    }
-}
-
-/// f32 / Complex<f32>
-impl Div<Complex<f32>> for f32 {
-    type Output = Complex<f32>;
-
-    fn div(self, rhs: Complex<f32>) -> Complex<f32> {
-        Complex::conj(rhs) / Complex::square_abs(rhs) * self
-    }
-}
-
-/// f64 / Complex<f64>
-impl Div<Complex<f64>> for f64 {
-    type Output = Complex<f64>;
-
-    fn div(self, rhs: Complex<f64>) -> Complex<f64> {
-        Complex::conj(rhs) / Complex::square_abs(rhs) * self
     }
 }
 
@@ -227,3 +196,86 @@ impl<T: Float> DivAssign<Complex<T>> for Complex<T> {
         *self = *self / rhs;
     }
 }
+
+/// ComplexPolar<T> / T
+impl<T: Float> Div<T> for ComplexPolar<T> {
+    type Output = ComplexPolar<T>;
+
+    fn div(self, rhs: T) -> ComplexPolar<T> {
+        ComplexPolar::new(self.radius / rhs, self.angle)
+    }
+}
+
+/// ComplexPolar<T> /= T
+impl<T: Float> DivAssign<T> for ComplexPolar<T> {
+    fn div_assign(&mut self, rhs: T) {
+        *self = *self / rhs;
+    }
+}
+
+/// ComplexPolar<T> / ComplexPolar<T>
+impl<T: Float> Div<ComplexPolar<T>> for ComplexPolar<T> {
+    type Output = ComplexPolar<T>;
+
+    fn div(self, rhs: ComplexPolar<T>) -> ComplexPolar<T> {
+        ComplexPolar::new(self.radius / rhs.radius, self.angle - rhs.angle)
+    }
+}
+
+/// ComplexPolar<T> /= ComplexPolar<T>
+impl<T: Float> DivAssign<ComplexPolar<T>> for ComplexPolar<T> {
+    fn div_assign(&mut self, rhs: ComplexPolar<T>) {
+        *self = *self / rhs
+    }
+}
+
+/// T [operation] Complex<T>
+macro_rules! impl_float_lhs {
+    ($t:ty) => {
+        impl Add<Complex<$t>> for $t {
+            type Output = Complex<$t>;
+
+            fn add(self, rhs: Complex<$t>) -> Complex<$t> {
+                Complex::new(self + rhs.real, rhs.imag)
+            }
+        }
+        impl Sub<Complex<$t>> for $t {
+            type Output = Complex<$t>;
+
+            fn sub(self, rhs: Complex<$t>) -> Complex<$t> {
+                Complex::new(self - rhs.real, -rhs.imag)
+            }
+        }
+        impl Mul<Complex<$t>> for $t {
+            type Output = Complex<$t>;
+
+            fn mul(self, rhs: Complex<$t>) -> Complex<$t> {
+                Complex::new(rhs.real * self, rhs.imag * self)
+            }
+        }
+        impl Div<Complex<$t>> for $t {
+            type Output = Complex<$t>;
+
+            fn div(self, rhs: Complex<$t>) -> Complex<$t> {
+                Complex::conj(rhs) / Complex::square_abs(rhs) * self
+            }
+        }
+        impl Mul<ComplexPolar<$t>> for $t {
+            type Output = ComplexPolar<$t>;
+
+            fn mul(self, rhs: ComplexPolar<$t>) -> ComplexPolar<$t> {
+                ComplexPolar::new(rhs.radius * self, rhs.angle)
+            }
+        }
+        impl Div<ComplexPolar<$t>> for $t {
+            type Output = ComplexPolar<$t>;
+
+            fn div(self, rhs: ComplexPolar<$t>) -> ComplexPolar<$t> {
+                ComplexPolar::new(rhs.radius / self, rhs.angle)
+            }
+        }
+    };
+}
+
+impl_float_lhs!(f32);
+impl_float_lhs!(f64);
