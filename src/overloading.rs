@@ -152,11 +152,7 @@ impl<T: Float> Div<Complex<T>> for Complex<T> {
 /// Complex<T> /= Complex<T>
 impl<T: Float> DivAssign<Complex<T>> for Complex<T> {
     fn div_assign(&mut self, rhs: Complex<T>) {
-        let rhsrecip = rhs.recip();
-        *self = Complex::new(
-            self.real * rhsrecip.real - self.imag * rhsrecip.imag,
-            self.real * rhsrecip.imag + self.imag * rhsrecip.real,
-        );
+        *self = *self / rhs
     }
 }
 

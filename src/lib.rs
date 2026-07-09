@@ -39,6 +39,7 @@ impl<T: Float> Numbers for T {
     }
 }
 
+// Core
 impl<T: Float> Complex<T> {
     /// Creates a new [`Complex`].
     pub fn new(real: T, imag: T) -> Self {
@@ -55,6 +56,11 @@ impl<T: Float> Complex<T> {
         } else {
             Self { real, imag }
         }
+    }
+
+    #[allow(unused)] // Used in tests
+    fn new_raw(real: T, imag: T) -> Self {
+        Self { real, imag }
     }
 
     /// Returns the real part of this [`Complex`].
@@ -84,75 +90,102 @@ impl<T: Float> Complex<T> {
     pub fn imag(self) -> T {
         self.imag
     }
+}
 
+// Constants
+impl<T: Float> Complex<T> {
     /// Returns complex zero
     pub fn zero() -> Self {
-        Self::new(T::zero(), T::zero())
+        Self {
+            real: T::zero(),
+            imag: T::zero(),
+        }
     }
 
     /// Returns the imaginary number i
     pub fn i() -> Self {
-        Self::new(T::zero(), T::one())
+        Self {
+            real: T::zero(),
+            imag: T::one(),
+        }
     }
 
     /// Returns the negative of the imaginary number i
     pub fn neg_i() -> Self {
-        Self::new(T::zero(), -T::one())
+        Self {
+            real: T::zero(),
+            imag: -T::one(),
+        }
     }
 
     /// Returns complex one
     pub fn one() -> Self {
-        Self::new(T::one(), T::zero())
+        Self {
+            real: T::one(),
+            imag: T::zero(),
+        }
     }
 
     /// Returns complex negative one
     pub fn neg_one() -> Self {
-        Self::new(T::one(), T::zero())
+        Self {
+            real: -T::one(),
+            imag: T::zero(),
+        }
     }
 
     /// Returns complex NaN (Not a Number)
-    fn nan() -> Self {
-        Self::new(T::one(), T::zero())
+    pub fn nan() -> Self {
+        Self {
+            real: T::nan(),
+            imag: T::nan(),
+        }
     }
 
     /// Returns the complex infinity
-    fn infinity() -> Self {
-        Self::new(T::one(), T::zero())
+    pub fn infinity() -> Self {
+        Self {
+            real: T::infinity(),
+            imag: T::infinity(),
+        }
     }
+}
 
+// Utility functions
+impl<T: Float> Complex<T> {
     /// Checks whether a complex number is NaN
-    fn is_nan(self) -> bool {
+    pub fn is_nan(self) -> bool {
         self.real().is_nan() || self.imag().is_nan()
     }
 
     /// Checks whether a complex number is infinite
-    fn is_infinite(self) -> bool {
+    pub fn is_infinite(self) -> bool {
         self.real().is_infinite() || self.imag().is_infinite()
     }
 
     /// Checks whether a complex number is finite
-    fn is_finite(self) -> bool {
+    pub fn is_finite(self) -> bool {
         self.real().is_finite() && self.imag().is_finite()
     }
 
     /// Checks whether a complex number is real, meaning its imaginary part is zero and its real part is finite.
     pub fn is_real(self) -> bool {
-        self.real() == T::zero() && self.imag().is_finite()
+        self.real().is_finite() && self.imag() == T::zero()
     }
 
     /// Checks whether a complex number is almost real, meaning its imaginary part is almost zero and its real part is finite.
     pub fn is_almost_real(self, delta: T) -> bool {
-        self.real().abs() < delta && self.imag().is_finite()
+        self.real().is_finite() && self.imag().abs() < delta
     }
 
     /// Checks whether a complex number is imaginary, meaning its real part is zero and its imaginary part is finite.
     pub fn is_imag(self) -> bool {
-        self.imag() == T::zero() && self.real().is_finite()
+        self.real() == T::zero() && self.imag().is_finite()
     }
 
     /// Checks whether a complex number is almost imaginary, meaning its real part is almost zero and its imaginary part is finite.
     pub fn is_almost_imag(self, delta: T) -> bool {
-        self.imag().abs() < delta && self.real().is_finite()
+        self.real().abs() < delta && self.imag().is_finite()
     }
 
     /// Checks whether a complex number is equal to zero
@@ -164,7 +197,10 @@ impl<T: Float> Complex<T> {
     pub fn is_almost_zero(self, delta: T) -> bool {
         self.real().abs() <= delta && self.imag().abs() <= delta
     }
+}
 
+// Complex Arithmatic
+impl<T: Float> Complex<T> {
     /// Returns the conjugate of this [`Complex`].
     ///
     /// # Examples
@@ -443,7 +479,7 @@ impl<T: Float> Complex<T> {
 // Implements display
 impl<T: Float + Display> Display for Complex<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        if self.imag >= T::zero() {
+        if T::zero() <= self.imag {
             write!(f, "{} + {}i", self.real, self.imag)
         } else {
             write!(f, "{} - {}i", self.real, self.imag)

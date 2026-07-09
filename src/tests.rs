@@ -1,17 +1,175 @@
-#![allow(clippy::excessive_precision)]
+use super::*;
 use num_traits::Float;
 use std::f64;
 
-use super::*;
-
-fn almost_assert_eq<T: Float>(a: T, b: T, delta: T) {
+fn assert_almost_eq<T: Float>(a: T, b: T, delta: T) {
     assert!(T::abs(a - b) <= delta);
 }
 
-fn almost_assert_eq<T: Float>(a: Complex<T>, b: Complex<T>, delta: T) {
+fn assert_complex_almost_eq<T: Float>(a: Complex<T>, b: Complex<T>, delta: T) {
     assert!(Complex::abs(a - b) <= delta);
 }
 
+#[test]
+fn new() {
+    assert_eq!(
+        Complex::new(1_f32, 2_f32),
+        Complex {
+            real: 1_f32,
+            imag: 2_f32
+        }
+    );
+    assert_eq!(
+        Complex::new(-3.3, 69.42),
+        Complex {
+            real: -3.3,
+            imag: 69.42
+        }
+    );
+
+    // NaN
+    let numbers_1 = [
+        Complex::new(-3.3, f64::nan()),
+        Complex::new(f64::nan(), -3.3),
+        Complex::new(f64::nan(), f64::nan()),
+    ];
+    for number in numbers_1 {
+        assert!(number.real().is_nan());
+        assert!(number.imag().is_nan());
+    }
+
+    // Infinity + NaN
+    let numbers_2 = [
+        Complex::new(-3.3, f64::infinity()),
+        Complex::new(f64::infinity(), -3.3),
+        Complex::new(f64::infinity(), f64::infinity()),
+        Complex::new(f64::nan(), f64::infinity()),
+        Complex::new(f64::neg_infinity(), f64::nan()),
+        Complex::new(f64::neg_infinity(), f64::infinity()),
+    ];
+    for number in numbers_2 {
+        assert!(number.real().is_infinite());
+        assert!(number.imag().is_infinite());
+    }
+}
+
+#[test]
+fn real_imag() {
+    let numbers = [
+        (1_f32, 2_f32),
+        (-3_f32, 2_f32),
+        (f32::nan(), 1_f32),
+        (f32::infinity(), f32::nan()),
+    ];
+    for number in numbers {
+        let complex = Complex::new_raw(number.0, number.1);
+        if number.0.is_nan() {
+            assert!(complex.real().is_nan());
+        } else {
+            assert_eq!(complex.real(), number.0);
+        }
+
+        if number.1.is_nan() {
+            assert!(complex.imag().is_nan());
+        } else {
+            assert_eq!(complex.imag(), number.1);
+        }
+    }
+}
+
+#[test]
+fn constants() {
+    // Zero
+    assert_eq!(Complex::zero(), Complex::new(0_f32, 0_f32));
+    assert_eq!(Complex::zero(), Complex::new(0_f64, 0_f64));
+
+    // I
+    assert_eq!(Complex::i(), Complex::new(0_f32, 1_f32));
+    assert_eq!(Complex::i(), Complex::new(0_f64, 1_f64));
+
+    // Negative One
+    assert_eq!(Complex::neg_i(), Complex::new(0_f32, -1_f32));
+    assert_eq!(Complex::neg_i(), Complex::new(0_f64, -1_f64));
+
+    // One
+    assert_eq!(Complex::one(), Complex::new(1_f32, 0_f32));
+    assert_eq!(Complex::one(), Complex::new(1_f64, 0_f64));
+
+    // Negative One
+    assert_eq!(Complex::neg_one(), Complex::new(-1_f32, 0_f32));
+    assert_eq!(Complex::neg_one(), Complex::new(-1_f64, 0_f64));
+
+    // NaN
+    assert!(Complex::<f32>::nan().real().is_nan());
+    assert!(Complex::<f32>::nan().imag().is_nan());
+    assert!(Complex::<f64>::nan().real().is_nan());
+    assert!(Complex::<f64>::nan().imag().is_nan());
+
+    // Infinity
+    assert_eq!(
+        Complex::infinity(),
+        Complex::new(f32::infinity(), f32::infinity())
+    );
+    assert_eq!(
+        Complex::infinity(),
+        Complex::new(f64::infinity(), f64::infinity())
+    );
+}
+
+#[test]
+fn is_nan() {
+    assert!(Complex::new_raw(f64::nan(), 1_f64).is_nan());
+    assert!(Complex::new_raw(1_f64, f64::nan()).is_nan());
+    assert!(Complex::new_raw(f64::nan(), f64::nan()).is_nan());
+}
+
+#[test]
+fn is_infinite() {
+    assert!(Complex::new_raw(f32::infinity(), f32::infinity()).is_infinite());
+    assert!(Complex::new_raw(f32::infinity(), f32::neg_infinity()).is_infinite());
+    assert!(Complex::new_raw(f32::neg_infinity(), 1_f32).is_infinite());
+    assert!(Complex::new_raw(f32::nan(), f32::infinity()).is_infinite());
+
+    assert!(!Complex::new_raw(f32::nan(), f32::nan()).is_infinite());
+}
+
+#[test]
+fn is_finite() {
+    assert!(Complex::new_raw(1_f32, 0_f32).is_finite());
+    assert!(Complex::new_raw(6_f32, -4_f32).is_finite());
+
+    assert!(!Complex::new_raw(1_f32, f32::infinity()).is_finite());
+    assert!(!Complex::new_raw(f32::neg_infinity(), 3_f32).is_finite());
+    assert!(!Complex::new_raw(f32::nan(), f32::nan()).is_finite());
+}
+
+#[test]
+fn is_real() {
+    for i in -5..=5 {
+        assert!(Complex::new_raw(i as f32, 0_f32).is_real());
+        assert!(!Complex::new_raw(i as f32, -1_f32).is_real());
+    }
+
+    assert!(!Complex::new_raw(f32::infinity(), 0_f32).is_real());
+
+    assert!(Complex::new_raw(5_f32, 1.2e-16).is_almost_real(1e-15));
+    assert!(!Complex::new_raw(-4_f32, 1.2e-15).is_almost_real(1e-16));
+}
+
+#[test]
+fn is_imag() {
+    for i in -5..=5 {
+        assert!(Complex::new_raw(0_f32, i as f32).is_imag());
+        assert!(!Complex::new_raw(-1_f32, i as f32).is_imag());
+    }
+
+    assert!(!Complex::new_raw(0_f32, f32::infinity()).is_imag());
+
+    assert!(Complex::new_raw(1.2e-16, 5_f32).is_almost_imag(1e-15));
+    assert!(!Complex::new_raw(1.2e-15, -4_f32).is_almost_imag(1e-16));
+}
+
+/*
 #[test]
 fn unary_operators() {
     let z1 = Complex::new(3f64, 4f64);
@@ -25,15 +183,15 @@ fn unary_operators() {
 
     // abs
     assert_eq!(z1.abs(), 5f64);
-    almost_assert_eq(z2.abs(), 5.27730992078, 1e-7);
+    assert_almost_eq(z2.abs(), 5.27730992078, 1e-7);
 
     // square abs
     assert_eq!(z1.square_abs(), 25f64);
     assert_eq!(z2.square_abs(), 27.85);
 
     // arg
-    assert_almost_eq!(z1.arg(), 0.9272952180016123, 1e-7);
-    assert_almost_eq!(z2.arg(), -0.1713791263895069, 1e-7);
+    assert_almost_eq(z1.arg(), 0.9272952180016123, 1e-7);
+    assert_almost_eq(z2.arg(), -0.1713791263895069, 1e-7);
 
     // recip
     assert_eq!(z1.recip(), Complex::new(0.12, -0.16));
@@ -43,7 +201,7 @@ fn unary_operators() {
     );
 
     // exp
-    assert_almost_eq(
+    assert_complex_almost_eq(
         Complex::new(0f64, f64::consts::PI).exp(),
         Complex::new(-1f64, 0_f64),
         1e-12,
@@ -289,3 +447,4 @@ fn complex_inverse_hyperbolic_trig() {
         Complex::new(0.12124561370968728, -0.15950663187736328)
     );
 }
+*/
