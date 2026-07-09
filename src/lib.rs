@@ -15,6 +15,7 @@ pub type CC<T> = Complex<T>;
 
 trait Numbers: Float {
     fn two() -> Self;
+    fn pi() -> Self;
 }
 
 impl<T: Float> Numbers for T {
@@ -22,17 +23,38 @@ impl<T: Float> Numbers for T {
     fn two() -> T {
         T::one() + T::one()
     }
+    fn pi() -> T {
+        let digits = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3, 2, 3];
+        let mut pi = T::zero();
+        let ten = T::two() * T::two() * T::two() + T::two();
+        for (index, digit) in digits.iter().enumerate() {
+            let mut digit_t = T::zero();
+            for _ in 1..=*digit {
+                digit_t = digit_t + T::one();
+            }
+            pi = pi + digit_t * ten.powi(-(index as i32))
+        }
+
+        T::zero()
+    }
 }
 
 impl<T: Float> Complex<T> {
     /// Creates a new [`Complex`].
     pub fn new(real: T, imag: T) -> Self {
-        Self { real, imag }
-    }
-
-    /// Returns the imaginary number i
-    pub fn i() -> Self {
-        Self::new(T::zero(), T::one())
+        if real.is_infinite() || imag.is_infinite() {
+            Self {
+                real: T::infinity(),
+                imag: T::infinity(),
+            }
+        } else if real.is_nan() || imag.is_nan() {
+            Self {
+                real: T::nan(),
+                imag: T::nan(),
+            }
+        } else {
+            Self { real, imag }
+        }
     }
 
     /// Returns the real part of this [`Complex`].
@@ -57,10 +79,90 @@ impl<T: Float> Complex<T> {
     /// use ccmath::Complex;
     ///
     /// let z = Complex::new(-1.4, 21.6);
-    /// assert_eq!(z.real(), -1.4);
+    /// assert_eq!(z.imag(), 21.6);
     /// ```
     pub fn imag(self) -> T {
         self.imag
+    }
+
+    /// Returns complex zero
+    pub fn zero() -> Self {
+        Self::new(T::zero(), T::zero())
+    }
+
+    /// Returns the imaginary number i
+    pub fn i() -> Self {
+        Self::new(T::zero(), T::one())
+    }
+
+    /// Returns the negative of the imaginary number i
+    pub fn neg_i() -> Self {
+        Self::new(T::zero(), -T::one())
+    }
+
+    /// Returns complex one
+    pub fn one() -> Self {
+        Self::new(T::one(), T::zero())
+    }
+
+    /// Returns complex negative one
+    pub fn neg_one() -> Self {
+        Self::new(T::one(), T::zero())
+    }
+
+    /// Returns complex NaN (Not a Number)
+    fn nan() -> Self {
+        Self::new(T::one(), T::zero())
+    }
+
+    /// Returns the complex infinity
+    fn infinity() -> Self {
+        Self::new(T::one(), T::zero())
+    }
+
+    /// Checks whether a complex number is NaN
+    fn is_nan(self) -> bool {
+        self.real().is_nan() || self.imag().is_nan()
+    }
+
+    /// Checks whether a complex number is infinite
+    fn is_infinite(self) -> bool {
+        self.real().is_infinite() || self.imag().is_infinite()
+    }
+
+    /// Checks whether a complex number is finite
+    fn is_finite(self) -> bool {
+        self.real().is_finite() && self.imag().is_finite()
+    }
+
+    /// Checks whether a complex number is real, meaning its imaginary part is zero and its real part is finite.
+    pub fn is_real(self) -> bool {
+        self.real() == T::zero() && self.imag().is_finite()
+    }
+
+    /// Checks whether a complex number is almost real, meaning its imaginary part is almost zero and its real part is finite.
+    pub fn is_almost_real(self, delta: T) -> bool {
+        self.real().abs() < delta && self.imag().is_finite()
+    }
+
+    /// Checks whether a complex number is imaginary, meaning its real part is zero and its imaginary part is finite.
+    pub fn is_imag(self) -> bool {
+        self.imag() == T::zero() && self.real().is_finite()
+    }
+
+    /// Checks whether a complex number is almost imaginary, meaning its real part is almost zero and its imaginary part is finite.
+    pub fn is_almost_imag(self, delta: T) -> bool {
+        self.imag().abs() < delta && self.real().is_finite()
+    }
+
+    /// Checks whether a complex number is equal to zero
+    pub fn is_zero(self) -> bool {
+        self.real() == T::zero() && self.imag() == T::zero()
+    }
+
+    /// Checks whether a complex number is almost equal to zero
+    pub fn is_almost_zero(self, delta: T) -> bool {
+        self.real().abs() <= delta && self.imag().abs() <= delta
     }
 
     /// Returns the conjugate of this [`Complex`].
@@ -110,7 +212,7 @@ impl<T: Float> Complex<T> {
     /// assert_eq!(Complex::abs(z2), f32::sqrt(22.05));
     /// ```
     pub fn abs(self) -> T {
-        T::sqrt(Self::square_abs(self))
+        self.square_abs().sqrt()
     }
 
     /// Returns the argument on the interval (-PI, PI] of this [`Complex`].
@@ -131,7 +233,7 @@ impl<T: Float> Complex<T> {
     }
 
     /// Returns the multiplicative inverse of this [`Complex`].
-    pub fn inv(self) -> Self {
+    pub fn recip(self) -> Self {
         Self::conj(self) / Self::square_abs(self)
     }
 
@@ -140,10 +242,10 @@ impl<T: Float> Complex<T> {
         match exponent {
             0 => Self::new(T::one(), T::zero()),
             1 => self,
-            -1 => Self::inv(self),
+            -1 => Self::recip(self),
             _ => {
                 if exponent < 0 {
-                    Self::inv(Self::powi(self, -exponent))
+                    Self::recip(Self::powi(self, -exponent))
                 } else if exponent.rem_euclid(2) == 0 {
                     Self::powi(self * self, exponent / 2)
                 } else {
@@ -176,23 +278,23 @@ impl<T: Float> Complex<T> {
 
     /// Returns the natural logarithm of the absolute value of this [`Complex`].
     pub fn ln_abs(self) -> T {
-        T::ln(Self::square_abs(self)) / T::two()
+        T::ln(self.square_abs()) / T::two()
     }
 
     /// Returns the natural logarithm of this [`Complex`].
     pub fn ln(self) -> Self {
-        Self::new(Self::ln_abs(self), Self::arg(self))
+        Self::new(self.ln_abs(), self.arg())
     }
 
     /// Returns the logarithm base 10 of this [`Complex`].
     pub fn log(self) -> Self {
-        Self::ln(self) / T::ln(T::two() * (T::two() * T::two() + T::one()))
+        self.ln() / T::ln(T::two() * (T::two() * T::two() + T::one()))
         //                     This is equal to 10
     }
 
     /// Returns the logarithm base n of this [`Complex`].
     pub fn logn(self, base: T) -> Self {
-        Self::ln(self) / T::ln(base)
+        self.ln() / T::ln(base)
     }
 }
 
@@ -221,17 +323,17 @@ impl<T: Float> Complex<T> {
 
     /// Returns the cotangent of this [`Complex`].
     pub fn cot(self) -> Self {
-        Self::inv(Self::tan(self))
+        self.tan().recip()
     }
 
     /// Returns the secant of this [`Complex`].
     pub fn sec(self) -> Self {
-        Self::inv(Self::cos(self))
+        self.cos().recip()
     }
 
     /// Returns the cosecant of this [`Complex`].
     pub fn csc(self) -> Self {
-        Self::inv(Self::sin(self))
+        self.sin().recip()
     }
 
     // Inverse trig
@@ -243,27 +345,28 @@ impl<T: Float> Complex<T> {
 
     /// Returns the arccosine of this [`Complex`].
     pub fn arccos(self) -> Self {
-        Self::i() * Self::ln(Self::sqrt(-self.powi(2) + T::one()) / Self::i() + self)
+        -self.arcsin() + T::pi()
     }
 
     /// Returns the arctangent of this [`Complex`].
     pub fn arctan(self) -> Self {
-        Self::arcsin(self / Self::sqrt(self.powi(2) + T::one()))
+        Self::i() / T::two()
+            * (Self::ln(-Self::i() * self + T::one()) + Self::ln(Self::i() * self + T::one()))
     }
 
     /// Returns the arccotangent of this [`Complex`].
     pub fn arccot(self) -> Self {
-        Self::arctan(Self::inv(self))
+        self.recip().arctan()
     }
 
     /// Returns the arcsecant of this [`Complex`].
     pub fn arcsec(self) -> Self {
-        Self::arccos(Self::inv(self))
+        self.recip().arccos()
     }
 
     // Returns the arccosecant of this [`Complex`].
     pub fn arccsc(self) -> Self {
-        Self::arcsin(Self::inv(self))
+        self.recip().arcsin()
     }
 
     // Hyperbolic trig
@@ -291,17 +394,17 @@ impl<T: Float> Complex<T> {
 
     /// Returns the hyperbolic cotangent of this [`Complex`].
     pub fn coth(self) -> Self {
-        Self::inv(Self::tanh(self))
+        self.tanh().recip()
     }
 
     /// Returns the hyperbolic secant of this [`Complex`].
     pub fn sech(self) -> Self {
-        Self::inv(Self::cosh(self))
+        self.cosh().recip()
     }
 
     /// Returns the hyperbolic cosecant of this [`Complex`].
     pub fn csch(self) -> Self {
-        Self::inv(Self::sinh(self))
+        self.sinh().recip()
     }
 
     // Inverse hyperbolic trig
@@ -318,22 +421,22 @@ impl<T: Float> Complex<T> {
 
     /// Returns the hyperbolic arctangent of this [`Complex`].
     pub fn arctanh(self) -> Self {
-        Self::ln((self + T::one()) / (-self + T::one())) * T::powi(T::two(), -1)
+        Self::ln((self + T::one()) / (-self + T::one())) * T::two().powi(-1)
     }
 
     /// Returns the hyperbolic arccotangent of this [`Complex`].
     pub fn arccoth(self) -> Self {
-        Self::arctanh(Self::inv(self))
+        self.recip().arctanh()
     }
 
     /// Returns the hyperbolic arcsecant of this [`Complex`].
     pub fn arcsech(self) -> Self {
-        Self::arccosh(Self::inv(self))
+        self.recip().arccosh()
     }
 
     /// Returns the hyperbolic arccosecant of this [`Complex`].
     pub fn arccsch(self) -> Self {
-        Self::arcsinh(Self::inv(self))
+        self.recip().arcsinh()
     }
 }
 

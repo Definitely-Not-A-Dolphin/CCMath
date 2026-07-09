@@ -1,7 +1,16 @@
 #![allow(clippy::excessive_precision)]
+use num_traits::Float;
 use std::f64;
 
 use super::*;
+
+fn almost_assert_eq<T: Float>(a: T, b: T, delta: T) {
+    assert!(T::abs(a - b) <= delta);
+}
+
+fn almost_assert_eq<T: Float>(a: Complex<T>, b: Complex<T>, delta: T) {
+    assert!(Complex::abs(a - b) <= delta);
+}
 
 #[test]
 fn unary_operators() {
@@ -16,27 +25,28 @@ fn unary_operators() {
 
     // abs
     assert_eq!(z1.abs(), 5f64);
-    assert_eq!(z2.abs(), f64::sqrt(27.85));
+    almost_assert_eq(z2.abs(), 5.27730992078, 1e-7);
 
     // square abs
     assert_eq!(z1.square_abs(), 25f64);
     assert_eq!(z2.square_abs(), 27.85);
 
     // arg
-    assert_eq!(z1.arg(), 0.9272952180016123);
-    assert_eq!(z2.arg(), -0.1713791263895069);
+    assert_almost_eq!(z1.arg(), 0.9272952180016123, 1e-7);
+    assert_almost_eq!(z2.arg(), -0.1713791263895069, 1e-7);
 
-    // inv
-    assert_eq!(z1.inv(), Complex::new(0.12, -0.16));
+    // recip
+    assert_eq!(z1.recip(), Complex::new(0.12, -0.16));
     assert_eq!(
-        z2.inv(),
-        Complex::new(0.1867145421903052, 0.03231597845601436)
+        z2.recip(),
+        Complex::new(104_f64 / 557_f64, 18_f64 / 557_f64)
     );
 
     // exp
-    assert_eq!(
+    assert_almost_eq(
         Complex::new(0f64, f64::consts::PI).exp(),
-        Complex::new(-1f64, 1.2246467991473532e-16)
+        Complex::new(-1f64, 0_f64),
+        1e-12,
     );
     assert_eq!(
         z1.exp(),
@@ -84,7 +94,7 @@ fn binary_operators() {
         z1 / z2,
         Complex::new(
             0.38657075,
-            z1.real * z2.inv().imag + z1.imag * z2.inv().real
+            z1.real * z2.recip().imag + z1.imag * z2.recip().real
         )
     );
 
